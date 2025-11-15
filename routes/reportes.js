@@ -156,4 +156,45 @@ router.get('/obtenerEventos', async (req, res) => {
     }
 });
 
+router.post('/crearEvento', async (req, res) => {
+    const payload = req.body;
+
+    if (!payload) {
+        return res.status(400).json({ error: 'Payload obligatorio con los datos del evento.' });
+    }
+
+    const { Nombre, Categoria, Descripcion, Link, LinkFacebook } = payload;
+
+    if (!Nombre || !Categoria || !Descripcion || !Link || !LinkFacebook) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios: Nombre, Categoria, Descripcion, Link, LinkFacebook.' });
+    }
+
+    try {
+        const poolConnection = await sql.connect(dbConfig);
+        const requestSP = poolConnection.request();
+
+        requestSP.input('Nombre', sql.NVarChar(255), Nombre);
+        requestSP.input('Categoria', sql.NVarChar(sql.MAX), Categoria);
+        requestSP.input('Descripcion', sql.NVarChar(sql.MAX), Descripcion);
+        requestSP.input('Link', sql.NVarChar(255), Link);
+        requestSP.input('LinkFacebook', sql.NVarChar(255), LinkFacebook);
+
+        const execResult = await requestSP.execute('SP_CrearEvento');
+
+        const nuevoId = execResult.recordset?.[0]?.NuevoEventoID ?? execResult.recordset?.[0]?.EventoID ?? null;
+
+        res.status(201).json({
+            mensaje: 'Evento creado exitosamente mediante SP_CrearEvento.',
+            eventoID: nuevoId,
+            resultado: execResult.recordset ?? null
+        });
+    } catch (err) {
+        console.error('🔴 Error al ejecutar SP_CrearEvento:', err);
+        res.status(500).json({
+            error: 'Error interno al crear el evento.',
+            detalles: err.message
+        });
+    }
+});
+
 module.exports = router;
