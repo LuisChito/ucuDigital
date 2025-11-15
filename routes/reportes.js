@@ -179,7 +179,7 @@ router.post('/crearEvento', async (req, res) => {
         requestSP.input('Link', sql.NVarChar(255), Link);
         requestSP.input('LinkFacebook', sql.NVarChar(255), LinkFacebook);
 
-        const execResult = await requestSP.execute('SP_CrearEvento');
+        const execResult = await requestSP.execute('CrearComercio');
 
         const nuevoId = execResult.recordset?.[0]?.NuevoEventoID ?? execResult.recordset?.[0]?.EventoID ?? null;
 
