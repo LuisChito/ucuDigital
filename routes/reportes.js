@@ -93,5 +93,49 @@ router.get('/comercios', async (req, res) => {
     }
 });
 
+router.post('/crearEvento', async (req, res) => {
+    // 1. Obtener los datos del payload
+    const { titulo, cuerpo, fecha, lat, lng } = req.body;
+
+    // 2. Validación básica de datos
+    if (!titulo || !cuerpo || !fecha || !lat || !lng) {
+        return res.status(400).json({ 
+            mensaje: 'Faltan parámetros obligatorios (titulo, cuerpo, fecha, lat, lng) en el payload.' 
+        });
+    }
+
+    try {
+        // 3. Crear una solicitud (Request)
+        const request = new sql.Request();
+
+        // 4. Definir y enlazar los parámetros del SP
+        // Los nombres aquí (Titulo, Cuerpo, etc.) DEBEN coincidir con los parámetros del SP en SQL.
+        request.input('Titulo', sql.NVarChar(255), titulo);
+        request.input('Cuerpo', sql.NVarChar(sql.MAX), cuerpo);
+        request.input('Fecha', sql.DateTime, new Date(fecha)); // Crucial: convertir a objeto Date
+        request.input('Lat', sql.Decimal(9, 6), lat);
+        request.input('Lng', sql.Decimal(9, 6), lng);
+
+        // 5. Ejecutar el Stored Procedure
+        // Usamos 'SP_InsertarEvento' (el nombre del último SP que creamos)
+        const resultado = await request.execute('SP_InsertarEvento');
+        
+        // 6. Obtener el ID insertado
+        const nuevoId = resultado.recordset[0]?.NuevoEventoID;
+
+        // 7. Enviar respuesta de éxito
+        res.status(201).json({ 
+            mensaje: '🎉 Evento creado exitosamente.', 
+            eventoID: nuevoId
+        });
+
+    } catch (error) {
+        console.error('🔴 Error al crear el evento:', error.message);
+        res.status(500).json({ 
+            mensaje: 'Error interno del servidor al ejecutar el SP.',
+            detalles: error.message // Útil para depuración local
+        });
+    }
+});
 
 module.exports = router;
