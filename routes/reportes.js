@@ -15,12 +15,13 @@ router.post('/crearReporte', async (req, res) => {
 
     const Nombre = reportePayload['Nombre'];
     const Apellido = reportePayload['Apellido'];
+    const Numero = reportePayload['Numero'];
     const Tipo = reportePayload['Tipo'];
     const Descripcion = reportePayload['Descripcion'];
     const Latitud = reportePayload['Latitud'];
     const Longitud = reportePayload['Longitud'];
 
-    if (!Nombre || !Apellido || !Tipo || !Descripcion || !Latitud || !Longitud) {
+    if (!Nombre || !Apellido || !Numero || !Tipo || !Descripcion || !Latitud || !Longitud) {
         return res.status(400).json({ error: 'Faltan campos obligatorios para crear el reporte.' });
     }
 
@@ -30,6 +31,7 @@ router.post('/crearReporte', async (req, res) => {
 
         request.input('Nombre', sql.NVarChar(100), Nombre);
         request.input('Apellido', sql.NVarChar(100), Apellido);
+        request.input('Numero', sql.NVarChar(15), Numero);
         request.input('Tipo', sql.NVarChar(50), Tipo);
         request.input('Descripcion', sql.NVarChar(sql.MAX), Descripcion);
         request.input('Latitud', sql.Decimal(9, 6), Latitud);
