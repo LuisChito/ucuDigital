@@ -56,6 +56,7 @@ router.post('/crearReporte', async (req, res) => {
     }
 });
 
+
 router.post('/reportesPendientes', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
@@ -75,6 +76,22 @@ router.post('/reportesPendientes', async (req, res) => {
     }
 });
 
+router.get('/comercios', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        const request = pool.request();
+
+        const result = await request.execute('ObtenerComercios');
+
+        res.status(200).json({ comercios: result.recordset });
+    } catch (err) {
+        console.error("🔴 Error al obtener comercios:", err);
+        res.status(500).json({
+            error: 'Error interno del servidor al obtener los comercios.',
+            details: err.message
+        });
+    }
+});
 
 
 module.exports = router;
