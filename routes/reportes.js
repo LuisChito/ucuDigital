@@ -61,7 +61,7 @@ router.post('/reportesPendientes', async (req, res) => {
         const pool = await sql.connect(dbConfig);
         const request = pool.request();
 
-        const result = await request.execute('ObtenerReportes'); 
+        const result = await request.execute('ReportesPendientes'); 
         
         res.status(200).json({ 
             reportes: result.recordset 
