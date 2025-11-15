@@ -119,7 +119,7 @@ router.post('/crearEvento', async (req, res) => {
 
         // 5. Ejecutar el Stored Procedure
         // Usamos 'SP_InsertarEvento' (el nombre del último SP que creamos)
-        const resultado = await request.execute('SP_InsertarEvento');
+        const resultado = await request.execute('InsertarEvento');
         
         // 6. Obtener el ID insertado
         const nuevoId = resultado.recordset[0]?.NuevoEventoID;
