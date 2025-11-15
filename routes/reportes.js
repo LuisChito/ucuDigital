@@ -139,4 +139,21 @@ router.post('/crearEvento', async (req, res) => {
     }
 });
 
+router.get('/obtenerEventos', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        const request = pool.request();
+
+        const result = await request.execute('ObtenerEventos');
+
+        res.status(200).json({ eventos: result.recordset });
+    } catch (err) {
+        console.error("🔴 Error al obtener eventos:", err);
+        res.status(500).json({
+            error: 'Error interno del servidor al obtener los eventos.',
+            details: err.message
+        });
+    }
+});
+
 module.exports = router;
