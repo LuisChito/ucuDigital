@@ -93,52 +93,6 @@ router.get('/comercios', async (req, res) => {
     }
 });
 
-// Nuevo endpoint para crear un evento
-router.post('/crearEvento', async (req, res) => {
-    // 1. Obtener los datos del payload
-    const { titulo, cuerpo, fecha, lat, lng } = req.body;
-
-    // 2. Validación básica de datos
-    if (!titulo || !cuerpo || !fecha || !lat || !lng) {
-        return res.status(400).json({ 
-            mensaje: 'Faltan parámetros obligatorios (titulo, cuerpo, fecha, lat, lng) en el payload.' 
-        });
-    }
-
-    try {
-        // 3. Crear una solicitud (Request)
-        const request = new sql.Request();
-
-        // 4. Definir y enlazar los parámetros del SP
-        // Los nombres aquí (Titulo, Cuerpo, etc.) DEBEN coincidir con los parámetros del SP en SQL.
-        request.input('Titulo', sql.NVarChar(255), titulo);
-        request.input('Cuerpo', sql.NVarChar(sql.MAX), cuerpo);
-        request.input('Fecha', sql.DateTime, new Date(fecha)); // Crucial: convertir a objeto Date
-        request.input('Lat', sql.Decimal(9, 6), lat);
-        request.input('Lng', sql.Decimal(9, 6), lng);
-
-        // 5. Ejecutar el Stored Procedure
-        // Usamos 'SP_InsertarEvento' (el nombre del último SP que creamos)
-        const resultado = await request.execute('InsertarEvento');
-        
-        // 6. Obtener el ID insertado
-        const nuevoId = resultado.recordset[0]?.NuevoEventoID;
-
-        // 7. Enviar respuesta de éxito
-        res.status(201).json({ 
-            mensaje: '🎉 Evento creado exitosamente.', 
-            eventoID: nuevoId
-        });
-
-    } catch (error) {
-        console.error('🔴 Error al crear el evento:', error.message);
-        res.status(500).json({ 
-            mensaje: 'Error interno del servidor al ejecutar el SP.',
-            detalles: error.message // Útil para depuración local
-        });
-    }
-});
-
 router.get('/obtenerEventos', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
@@ -156,43 +110,44 @@ router.get('/obtenerEventos', async (req, res) => {
     }
 });
 
-router.post('/crearEvento', async (req, res) => {
-    const payload = req.body;
-
-    if (!payload) {
-        return res.status(400).json({ error: 'Payload obligatorio con los datos del evento.' });
-    }
-
-    const { Nombre, Categoria, Descripcion, Link, LinkFacebook } = payload;
-
-    if (!Nombre || !Categoria || !Descripcion || !Link || !LinkFacebook) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios: Nombre, Categoria, Descripcion, Link, LinkFacebook.' });
-    }
+router.post('/crearComercio', async (req, res) => {
+    // 1. Obtener los datos del payload
+    // Destructuración: Las claves del payload coinciden con las variables de JS
+    const { Nombre, Categoria, Descripcion, Link, LinkFacebook } = req.body;
 
     try {
-        const poolConnection = await sql.connect(dbConfig);
-        const requestSP = poolConnection.request();
+        // 3. Crear una solicitud (Request)
+        const request = new sql.Request();
 
-        requestSP.input('Nombre', sql.NVarChar(255), Nombre);
-        requestSP.input('Categoria', sql.NVarChar(sql.MAX), Categoria);
-        requestSP.input('Descripcion', sql.NVarChar(sql.MAX), Descripcion);
-        requestSP.input('Link', sql.NVarChar(255), Link);
-        requestSP.input('LinkFacebook', sql.NVarChar(255), LinkFacebook);
+        // 4. Definir y enlazar los parámetros del SP
+        // ¡Importante! Los nombres de los inputs deben coincidir con los parámetros del SP en SQL.
+        // Los tipos de datos deben coincidir con la definición de tu SP.
+        
+        request.input('Nombre', sql.NVarChar(255), Nombre);
+        request.input('Categoria', sql.NVarChar(100), Categoria);
+        
+        // Parámetros opcionales
+        request.input('Descripcion', sql.NVarChar(sql.MAX), Descripcion);
+        request.input('Link', sql.NVarChar(500), Link);
+        request.input('LinkFacebook', sql.NVarChar(500), LinkFacebook);
 
-        const execResult = await requestSP.execute('CrearComercio');
+        // 5. Ejecutar el Stored Procedure
+        const resultado = await request.execute('CrearComercio');
+        
+        // 6. Obtener el ID insertado (si el SP devuelve SCOPE_IDENTITY())
+        const nuevoId = resultado.recordset[0]?.ComercioID;
 
-        const nuevoId = execResult.recordset?.[0]?.NuevoEventoID ?? execResult.recordset?.[0]?.EventoID ?? null;
-
-        res.status(201).json({
-            mensaje: 'Evento creado exitosamente mediante SP_CrearEvento.',
-            eventoID: nuevoId,
-            resultado: execResult.recordset ?? null
+        // 7. Enviar respuesta de éxito
+        res.status(201).json({ 
+            mensaje: 'Comercio creado y registrado.', 
+            comercioID: nuevoId
         });
-    } catch (err) {
-        console.error('🔴 Error al ejecutar SP_CrearEvento:', err);
-        res.status(500).json({
-            error: 'Error interno al crear el evento.',
-            detalles: err.message
+
+    } catch (error) {
+        console.error('🔴 Error al crear el comercio:', error.message);
+        res.status(500).json({ 
+            mensaje: 'Error interno del servidor al ejecutar el SP.',
+            detalles: error.message // Útil para depuración local
         });
     }
 });
