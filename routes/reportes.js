@@ -93,6 +93,7 @@ router.get('/comercios', async (req, res) => {
     }
 });
 
+// Nuevo endpoint para crear un evento
 router.post('/crearEvento', async (req, res) => {
     // 1. Obtener los datos del payload
     const { titulo, cuerpo, fecha, lat, lng } = req.body;
