@@ -1,15 +1,17 @@
 const express = require('express');
 const sql = require('mssql');
 const dbConfig = require('./config/db.config');
+const cors = require('cors'); 
 require('dotenv').config();
 
-// Importación de Rutas (CORREGIDA: Ahora apunta a reportes.routes.js)
+// Importación de Rutas (CORREGIDA: Apuntando al nombre exacto del archivo)
 const reportes = require('./routes/reportes'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
+app.use(cors()); 
 app.use(express.json()); 
 app.use('/api', reportes);
 
